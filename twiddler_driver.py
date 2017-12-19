@@ -3,6 +3,7 @@
 import fcntl
 import os
 import struct
+import subprocess
 import termios
 import threading
 import tty
@@ -133,6 +134,9 @@ def main():
 
     for result in read_keys(mapping, read_bytes(fd)):
         print(repr(result))
+        if '"' in result:
+            text = result.strip().strip('"')
+            subprocess.check_call(['xdotool', 'type', text])
 
 def normalize(thumbs, chord):
     prefix = '+'.join(t.upper() for t in thumbs) if thumbs else '0'
@@ -213,3 +217,4 @@ def foo():
 if __name__ == '__main__':
     main()
 
+# etethe hoi asrorywlm .1cfglkdcuwyebsriotnallxqpbvzorhethrorsanirorwxpdlkmhesrom lrn
