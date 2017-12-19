@@ -30,6 +30,12 @@ def main():
 
     tty.setraw(fd)
 
+    # What really sets the Twiddler communicating?
+    baudrate = 0
+
+    termios.tcsetattr(fd, termios.TCSANOW,
+                      [iflag, oflag, cflag, lflag, baudrate, baudrate, cc])
+
     os.system('stty -a < /dev/ttyS0')
     os.write(1, b'ready\n')
     while True:
@@ -38,3 +44,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
