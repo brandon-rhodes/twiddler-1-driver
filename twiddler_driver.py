@@ -141,13 +141,15 @@ def normalize(thumbs, chord):
 def read_keys(mapping, bytes):
     old_thumbs, old_chord = '', '0000'
     ready = False
-    for new_thumbs, new_chord in read_chords(bytes):
+    for new_thumbs, new_chord, vertical, horizontal in read_chords(bytes):
+        if 'MOUSE' in new_thumbs:
+            print('%5d %6d' % (vertical, horizontal))
+            continue
         if new_chord.count('0') < old_chord.count('0'):
             ready = True        # they pressed another key
         elif ready and new_chord.count('0') > old_chord.count('0'):
             ready = False       # they released a key
             name = normalize(old_thumbs, old_chord)
-            print(repr(name))
             output = mapping.get(name)
             if output is not None:
                 yield output
@@ -157,33 +159,22 @@ def read_keys(mapping, bytes):
 def read_chords(bytes):
     columns = '0LMR'
     thumb_bits = [(0x100 << i, name) for i, name in enumerate(THUMBS)]
+    offsets = list(enumerate(range(0, 7*5, 7)))
 
     for block in read_blocks(bytes):
-        lower_7_bits = block[0] & 0x7f
-        upper_7_bits = block[1] & 0x7f
-        bits = (upper_7_bits << 7) | lower_7_bits
+        bits = sum((block[i] & 0x7f) << offset for i, offset in offsets)
         chord = ''.join(columns[(bits >> i) & 0x3] for i in (0, 2, 4, 6))
         thumbs = {thumb for bit, thumb in thumb_bits if bits & bit}
-        yield thumbs, chord
-
-        # print('%02x %02x %02x %02x %02x' % tuple(block),
-        #       chord, hex(mouse_but), thumbs)
+        vertical = (bits >> 14) & 0x1ff
+        horizontal = bits >> 23
+        yield thumbs, chord, vertical, horizontal
 
 def read_blocks(bytes):
     for b in bytes:
         if b & 0x80:
             continue
-        block = [b, next(bytes), next(bytes), next(bytes), next(bytes)]
+        block = b, next(bytes), next(bytes), next(bytes), next(bytes)
         yield block
-    return
-    block = [b]
-    while True:
-        b = next(bytes)
-        if b & 0x80:
-            block.append(b)
-        else:
-            yield block
-            block = [b]
 
 def read_bytes(fd):
     while True:
