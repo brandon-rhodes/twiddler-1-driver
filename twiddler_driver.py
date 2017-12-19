@@ -8,6 +8,8 @@ import threading
 import tty
 from time import sleep
 
+THUMBS = 'SHIFT NUM FUNC CTRL ALT MOUSE'.split()
+
 def main():
     f = open('/dev/ttyS0', 'r+b', buffering=0)
     fd = f.fileno()
@@ -116,22 +118,24 @@ def main():
     #     print(repr(byte))
 
     columns = '0LMR'
+    thumb_bits = [(0x100 << i, name) for i, name in enumerate(THUMBS)]
 
     for block in read_blocks(read_bytes(fd)):
         #for block in (read_bytes(fd)):
         lower_7_bits = block[0] & 0x7f
-        upper_6_bits = block[1] & 0x3f
-        bits = (upper_6_bits << 7) | lower_7_bits
+        upper_7_bits = block[1] & 0x7f
+        bits = (upper_7_bits << 7) | lower_7_bits
         chord = ''.join((
             columns[bits & 0x3],
             columns[(bits >> 2) & 0x3],
             columns[(bits >> 4) & 0x3],
             columns[(bits >> 6) & 0x3],
         ))
+        thumbs = [thumb for bit, thumb in thumb_bits if bits & bit]
         mouse_but = block[1]&0x40
-        if not mouse_but:
+        if 1:#not mouse_but:
             print('%02x %02x %02x %02x %02x' % tuple(block),
-                  chord, hex(mouse_but))
+                  chord, hex(mouse_but), thumbs)
 
 def read_blocks(bytes):
     for b in bytes:
