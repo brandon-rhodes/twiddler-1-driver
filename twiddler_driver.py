@@ -117,11 +117,44 @@ def main():
     # for byte in read_bytes(fd):
     #     print(repr(byte))
 
-    for thumbs, chord in read_states(read_bytes(fd)):
-        print(thumbs, chord)
+    mapping = {}
 
+    with open('/home/brhodes/tabspace.ini') as ini:
+        for line in ini:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            state, text = line.split('=', 1)
+            thumbs, chord = state.rsplit(None, 1)
+            thumbs = [t.strip() for t in thumbs.split('+')]
+            mapping[normalize(thumbs, chord)] = text
 
-def read_states(bytes):
+    print(mapping)
+
+    for result in read_keys(mapping, read_bytes(fd)):
+        print(repr(result))
+
+def normalize(thumbs, chord):
+    prefix = '+'.join(t.upper() for t in thumbs) if thumbs else '0'
+    return '{} {}'.format(prefix, chord.upper())
+
+def read_keys(mapping, bytes):
+    old_thumbs, old_chord = '', '0000'
+    ready = False
+    for new_thumbs, new_chord in read_chords(bytes):
+        if new_chord.count('0') < old_chord.count('0'):
+            ready = True        # they pressed another key
+        elif ready and new_chord.count('0') > old_chord.count('0'):
+            ready = False       # they released a key
+            name = normalize(old_thumbs, old_chord)
+            print(repr(name))
+            output = mapping.get(name)
+            if output is not None:
+                yield output
+        old_thumbs = new_thumbs
+        old_chord = new_chord
+
+def read_chords(bytes):
     columns = '0LMR'
     thumb_bits = [(0x100 << i, name) for i, name in enumerate(THUMBS)]
 
