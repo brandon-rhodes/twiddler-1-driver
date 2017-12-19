@@ -1,0 +1,159 @@
+TWIDDLER 
+
+NAME
+	twiddler - X/console driver for the twiddler one handed
+	keyboard (Handkey, Inc)
+
+SYNOPSIS
+
+	twiddler [-k] [-p port_number] [-f additional_mapping_filename] 
+                 [-x default_x_console]
+
+DESCRIPTION
+
+	This manual page describes the Linux/X twiddler keyboard
+	driver.  The driver attempts to emulate the keyboard
+	as closely as possible, and also tries to conform to
+	HandyKey's file format and key bindings as closely as
+	possible.  There are several extensions to the file format and
+	operation that are specific to Linux that are documented
+	below.
+
+OPTIONS 
+   -k 
+	Kill the twiddler driver (must be root).
+
+   -p <port #>
+	Set the default port for the twiddler.  Port # is an arbitrary
+	serial device, for example ttyR7.
+
+   -f <filename>
+	Add additional key bindings to the twiddler keymap.
+	<filename> is a file that is in the standard twiddler keymap
+	format as specified by the HandyKey manual with the exception
+	of the additions presented below.  Any overlap with the default
+	twiddler keymap will result in the new file's bindings to take
+	precedence. (do not need to be root)
+
+   -x <x console #>
+        Usually the X console is set to VT 7.  If you use a different
+        virtual console for X, then use this option to specify which
+	console your X server is using. (can only be used when you 
+        start the driver, if a driver is already running, see X_TOGGLE
+        below)
+
+ENVIRONMENT
+
+	The twiddler driver expects that the default key bindings will
+	be in the file /etc/twid_defaults.ini.  To change this you can
+	define the environment variable TWID_DEFAULTS to point to the
+	location of the twiddler default keybinding file.
+
+ADDITIONAL KEYWORDS
+
+	In addition to Handykey's default keywords (BACKSPACE, ESCAPE,
+	ENTER, TAB), I have added extra keywords that the twiddler driver
+	will recognize that are specific to the Linux version:
+	
+  CAPS_LOCK
+	
+	The CAPS_LOCK key can be redefined at will by using this
+	keyword associated with a new binding.  The operation of the
+	CAPS_LOCK function is as following:
+	Any letter that would've been 'a'-'z' is now 'A'-'Z'
+	regardless of your keyboard mapping.
+
+  NUM_LOCK
+	
+	Similar to CAPS_LOCK, in that it can be redefined at will.  
+   	Any chord that would've been '0'-'9' if NUM was pressed is
+	now '0'-'9' without pressing NUM. (No matter what your
+	definitions are)
+	
+  SCROLL_LOCK
+	
+	Is equivalent to hitting ctrl-s and ctrl-q. Can be redefined
+	at will.
+
+  X_TOGGLE 
+
+	By hitting the chord defined to be X_TOGGLE, you will tell the
+	driver to consider the current console to be the X console.
+	This is similar to starting the driver with the -x option
+        with the number of the currently active console.
+
+  VT
+
+	This option is only meaningful when followed by a number, such
+	as VT,7.  What this does is define the VT switching
+	chords. VT,# defines the switch to VT # .  For example VT,7 is
+	the switch to Vt#7 which is typically the X terminal.  The
+	default VT switches are CTRL+SHIFT L000 for VT01 to 
+	CTRL+SHIFT 000L tfor VT04 and them CTRL+SHIFT M000 for Vt05 to
+	CTRL+SHIFT 00M0 for VT07 (X, usually).
+
+  CTALDEL
+
+	I have defined a special keyword to define a shutdown command.
+	The default is CTRL+ALT 0L00 (CTR+ALT DEL).  The keyword must
+	be followed by a text string which designated the shutdown
+	script to run.  The default is set to: 
+	CTRL+ALT 0L00 = CTALDEL,"/sbin/shutdown -t3 -rf now".  
+	Usually, you will want to look at /etc/inittab and look at the
+	ca:ctrlaltdel line and put that command into your own default
+	file.
+
+  NULL
+	Since the twiddler keymaps are stored as null terminated
+	strings, the NULL character is impossible to reproduce, unless
+	you use the NULL keyword.  This keyword must be used alone. 
+	(i.e. no other character can be a part of this mapping)
+
+MISC.
+	The mouse driver has two modifiers.  One is 00M0 which while
+	you hold that down will give you low-resolution mouse movement
+	suitable for flying across the screen quickly.  The other is
+	00R0 which will prdoduce, fine, hi-res mouse movement. All of
+	the other mouse buttons should work fine while in either mode.
+	
+	You must be root to start up the twiddler, but any user can
+	run the prgram again in order to change the current defaults.
+	Running "twiddler" by itself will restore the default key
+	bindings, and running "twiddler -f <filename>" will erase any
+	current key bindings and start over with the original defaults
+	plus the bindings in <filename>
+
+	A2X has a nice feature that I took advantage of.  If you press
+	a chord that contains any combiniation of the CTRL, ALT, or
+	SHIFT buttons while in X, and that particular combination is
+	not specifically defined, then the driver will figure out what
+	key would've been pressed if you hadn't used any thumb
+	modifiers, and then tell the X server to apply CTRL, ALT or
+	SHIFT appropriately. For example ALT-x isn't specifially
+	defined, but by pressing it the driver sees the 'x' and then
+	tells the X server to print 'x' with alt modifier turned on
+	pruducing the correct character (this particular one useful in
+	emacs)
+
+BUGS
+
+	Well Actually I can't find any right now, but as this is only a beta
+	release, I invite people to try it out and tell me what goes wrong.
+	
+	The driver prints out its messages to stderr of wherever
+	it was created.  So this is pretty useless because a user wont
+	see any of this.  I suppose I could change it, but there are more
+	important things to worry about.	
+
+	Some X servers have a problem with root getting X access: type
+        "xhost +<machinename>" and this should correct the problem.
+
+        Some keys are not mapped correctly in X.  
+
+-----------
+2/16/96
+Jeff Levine
+<tornado@media.mit.edu>
+
+1/9/97 patch to allow arbitrary serial ports by David Spector
+<spector@zeitgeist.com> added.

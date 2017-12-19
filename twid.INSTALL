@@ -1,0 +1,26 @@
+To install the twiddler driver:
+-------------------------------
+
+1. You must have the files "twiddler" and "a2x" installed in your
+   path.  If the executable a2x provided with the package does not
+   run, then you must untar the source (a2x.tar.gz) and go into the
+   directory and type: xmkmf; make; (for more info look at the a2x
+   docs).
+
+2. the file "twid_defaults.ini" must be copied to the /etc directory 
+   Otherwise you must define the TWID_DEFAULTS environment varable
+   that points to the correct location.
+
+3. if you need to recompile twiddler, please note that there is NO
+   makefile the command: gcc twid.c -o twiddler  
+   should work fine. (or you can add optimizations, etc..)
+
+4. You need to run twiddler as root when starting for the first time.
+   Non root users can only reset/set the key bindings.
+
+-----
+4/16/96	
+Jeff Levine
+<tornado@media.mit.edu>
+
+
