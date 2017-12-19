@@ -57,8 +57,8 @@ def main():
     # s = struct.pack('i', termios.TIOCM_DSR)
     # fcntl.ioctl(fd, termios.TIOCMBIS, s)
 
-    s = struct.pack('i', termios.TIOCM_RTS)
-    fcntl.ioctl(fd, termios.TIOCMBIC, s)
+    # s = struct.pack('i', termios.TIOCM_RTS)
+    # fcntl.ioctl(fd, termios.TIOCMBIC, s)
     s = struct.pack('i', termios.TIOCM_DTR)
     fcntl.ioctl(fd, termios.TIOCMBIC, s)
 
@@ -83,11 +83,11 @@ def main():
         # fcntl.ioctl(fd, termios.TIOCMBIC, s)
         sleep(0.1)
 
-    check()
+    # check()
     #os.system('stty -a < /dev/ttyS0')
-    check()
+    # check()
     os.write(1, b'Ready\n')
-    check()
+    # check()
 
     def tfunc():
         from time import sleep
@@ -97,9 +97,9 @@ def main():
             s = fcntl.ioctl(fd, termios.TIOCMGET, s, True)
             print(s)
 
-    t = threading.Thread(target=tfunc)
-    t.daemon = True
-    t.start()
+    # t = threading.Thread(target=tfunc)
+    # t.daemon = True
+    # t.start()
 
     def read():
         return ord(os.read(fd, 1))
@@ -112,8 +112,8 @@ def main():
     # while True:
     #     print(repr(os.read(fd, 1)))
 
-    for byte in read_bytes(fd):
-        print(repr(byte))
+    # for byte in read_bytes(fd):
+    #     print(repr(byte))
 
     for block in read_blocks(read_bytes(fd)):
         #for block in (read_bytes(fd)):
@@ -122,7 +122,7 @@ def main():
         index = (upper_6_bits << 7) | lower_7_bits
         mouse_but = block[1]&0x40
         if not mouse_but:
-            print([hex(b) for b in block]), hex(index), hex(mouse_but)
+            print(([hex(b) for b in block]), hex(index), hex(mouse_but))
 
 def read_blocks(bytes):
     for b in bytes:
