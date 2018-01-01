@@ -28,6 +28,7 @@ but I cannot invoke either of them on a modern Linux machine:
             libc.so.5 => not found
 
 I was, however, able to successfully recompile ``twiddler.c``
-and have included the result here as ``twiddler.x86_64``.
+and the accompanying ``a2x`` utility
+and have included the results here as ``twiddler.x86_64`` and ``a2x.x86_64``.
 
 — Brandon Rhodes, 2018 January 1
