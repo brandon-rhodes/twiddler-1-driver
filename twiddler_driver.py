@@ -1,5 +1,9 @@
 #!/usr/bin/python3
 
+# prior work: https://github.com/mati75/gpm/blob/master/debian/gpm.templates
+# https://manpages.debian.org/jessie/gpm/gpm-types.7.en.html
+# https://wiki.archlinux.org/index.php/serial_input_device_to_kernel_input
+
 import fcntl
 import os
 import struct
