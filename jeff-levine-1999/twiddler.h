@@ -22,18 +22,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/vt.h>

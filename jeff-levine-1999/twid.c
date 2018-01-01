@@ -198,7 +198,7 @@ if (xterm_on)
 	  case (MOUSE_LORES):
 	    mouse_res=1;
 	    break;
-	  default: break;
+	  default:
 	    mouse_res=0;
 	  }
 	events->cur_state.horiz_tilt = 0 | (((buffer[3]&0x7c)>>2) | 
@@ -295,7 +295,7 @@ if (xterm_on)
 	      events->flags &= ~EVENT_ENABLE;
 	      mouse_reverse = 1-mouse_reverse;
 	      return (0);
-	    default: break;
+	    default:
 	      /* we dont have any other keys to be pressed during mouse mode,
 		 but here's where normal style "hardwired" key presses 
 		 like mouse_reverse would go */
@@ -712,7 +712,7 @@ int init(STATE states,int argc,char **argv)
 	      initialize=1;
 	    }
 	  break;
-	default: break;
+	default:
 	  printf ("Invalid argument...\n");
 #ifndef EXTENDED_SERIAL
 	  printf ("Usage: twid [-p #] [-k] [-f filename] [-x #]\n");
@@ -984,7 +984,7 @@ int parse_line (int *bucket,char *line, char **map,int linenum)
 	    break;
 	  case '0':
 	    break;
-	  default: break;
+	  default:
 	  printf ("Error in config file,line %d: Finger field %s is invalid\n",linenum,cur_string);
 	  return (-1);
 	  }
