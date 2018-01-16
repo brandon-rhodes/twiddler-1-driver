@@ -8,6 +8,7 @@ import fcntl
 import os
 import struct
 import subprocess
+import sys
 import termios
 import threading
 import tty
@@ -129,21 +130,62 @@ def main():
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
-            state, text = line.split('=', 1)
+            state, rhs = line.split('=', 1)
             thumbs, chord = state.rsplit(None, 1)
             thumbs = [t.strip() for t in thumbs.split('+')]
+            text = parse_rhs(rhs)
             mapping[normalize(thumbs, chord)] = text
 
     print(mapping)
 
     for result in read_keys(mapping, read_bytes(fd)):
         print(repr(result))
-        if '"' in result:
-            text = result.strip().strip('"')
-            subprocess.check_call(['xdotool', 'type', text])
+        subprocess.check_call(['xdotool', 'type', result])
+
+GLOBALS = {}
+LOCALS = {
+    'BACKSPACE': '\b',
+    'ENTER': '\r',
+    #'CTRLALTDEL'
+    'ESCAPE': '\033',
+    'TAB': '\t',
+    'NULL': '\0',
+    'CAPS_LOCK': 'TODO',
+    'SCROLL_LOCK': 'TODO',
+    'VT': '\v',
+    'NUM_LOCK': 'TODO',
+    #'X_TOGGLE'
+}
+
+def parse_rhs(text):
+    r"""Parse the right-hand-side of a Twiddler ini entry.
+
+    >>> parse_rhs(r'BACKSPACE,TAB,20,"abc","\"","\\"')
+    '\x08\t\x14abc"\\'
+
+    """
+    try:
+        value = eval(text, GLOBALS, LOCALS)
+        if not isinstance(value, tuple):
+            value = (value,)
+        return ''.join(_parse_item(item) for item in value)
+    except Exception:
+        sys.stderr.write('Cannot parse right hand side: {}\n'.format(text))
+        sys.exit(1)
+
+def _parse_item(item):
+    if isinstance(item, int):
+        return chr(item)
+    return item
 
 def normalize(thumbs, chord):
-    prefix = '+'.join(t.upper() for t in thumbs) if thumbs else '0'
+    """Return a canonical string for the given Twiddler button state.
+
+    >>> normalize(['NUM', 'func'], 'r0lm')
+    'FUNC+NUM R0LM'
+
+    """
+    prefix = '+'.join(sorted(t.upper() for t in thumbs)) if thumbs else '0'
     return '{} {}'.format(prefix, chord.upper())
 
 def read_keys(mapping, bytes):
@@ -165,29 +207,36 @@ def read_keys(mapping, bytes):
         old_chord = new_chord
 
 def read_chords(bytes):
+    """Translate raw Twiddler packets into buttons, chords, and coordinates.
+
+    >>> list(read_chords([0x47, 0xa5, 0x80, 0x87, 0xa9]))
+    [(('NUM', 'ALT'), 'RL0R', 384, 1313)]
+
+    """
     columns = '0LMR'
     thumb_bits = [(0x100 << i, name) for i, name in enumerate(THUMBS)]
-    offsets = list(enumerate(range(0, 7*5, 7)))
+    offsets = list(enumerate(range(0, 7*5, 7)))  # TODO: simplify
 
-    for block in read_blocks(bytes):
-        bits = sum((block[i] & 0x7f) << offset for i, offset in offsets)
+    for packet in read_packets(bytes):
+        bits = sum((packet[i] & 0x7f) << offset for i, offset in offsets)
         chord = ''.join(columns[(bits >> i) & 0x3] for i in (0, 2, 4, 6))
-        thumbs = {thumb for bit, thumb in thumb_bits if bits & bit}
+        thumbs = tuple(thumb for bit, thumb in thumb_bits if bits & bit)
         vertical = (bits >> 14) & 0x1ff
         horizontal = bits >> 23
         yield thumbs, chord, vertical, horizontal
 
-def read_blocks(bytes):
+def read_packets(bytes):
+    """Given a sequence of bytes, yield 5-byte Twiddler data packets."""
+    bytes = iter(bytes)         # in case it's a list, so we can next() it
     for b in bytes:
-        if b & 0x80:
+        if b & 0x80:            # first byte of a packet has 8th bit unset
             continue
-        block = b, next(bytes), next(bytes), next(bytes), next(bytes)
-        yield block
+        yield b, next(bytes), next(bytes), next(bytes), next(bytes)
 
 def read_bytes(fd):
+    """Yield successive bytes from the given file descriptor."""
     while True:
         yield ord(os.read(fd, 1))
-
 
 def foo():
     while True:
@@ -219,6 +268,9 @@ def foo():
         print(hex(b0))
 
 if __name__ == '__main__':
+    if sys.version_info[0] < 3:
+        sys.stderr.write('Error: run this script with Python 3\n')
+        sys.exit(1)
     main()
 
 # etethe hoi asrorywlm .1cfglkdcuwyebsriotnallxqpbvzorhethrorsanirorwxpdlkmhesrom lrn
